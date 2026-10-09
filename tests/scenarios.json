@@ -1,0 +1,374 @@
+{
+  "_note": "Les tickets s'appuient sur de vraies lignes de l'extraction BAF09 et de vraies fiches du fichier de questions-réponses. Les blocs 'fixtures' sont des réponses FACTICES d'agents : les scores et les constats sont écrits à la main pour tester le graphe, ils ne sortent d'aucun calcul.",
+  "scenarios": [
+    {
+      "id": "S1_question_documentaire",
+      "enonce": "Situation 1 : question simple résolue à partir d'une source documentaire",
+      "expected": {
+        "decision": "repondre",
+        "rule": "reponse_etayee",
+        "kb_gap": false
+      },
+      "ticket": {
+        "ticket_id": "TCK-0001",
+        "received_at": "2026-03-18T09:12:00",
+        "email": "pricer1@example.com",
+        "pricelist_number": "11577",
+        "pricing_group": "MIA-ATLANTIC COAST TO EUROPE-ALL",
+        "time_of_issue": "2026-03-18 09:00",
+        "description": "I want to add a voyage under the KILIMA service in my Priceline but the system doesn't find it. Routing and CSA are correctly set up. What is happening?",
+        "pol": "MXVER",
+        "pod": "ESSCT",
+        "container_type": "",
+        "line_reference": "2378-134",
+        "quote_id": "",
+        "booking_id": ""
+      },
+      "fixtures": {
+        "classify": {
+          "theme": "Pricing",
+          "in_scope": true,
+          "team": "Pricing",
+          "needs": [
+            "docs"
+          ],
+          "price_case": false
+        },
+        "doc_search": {
+          "reliable": true,
+          "docs": [
+            {
+              "source": "KB-SPT-003",
+              "score": 0.86,
+              "extrait": "If the service isn't found when creating a pricelist, first check in CGOL whether the service exists."
+            },
+            {
+              "source": "Adding a Service or CGOL to a Pricelist.pdf",
+              "score": 0.79,
+              "extrait": "Guide pas à pas, page 5."
+            }
+          ]
+        }
+      }
+    },
+    {
+      "id": "S2_prix_plusieurs_donnees",
+      "enonce": "Situation 2 : cas de prix nécessitant la consultation de plusieurs données",
+      "expected": {
+        "decision": "repondre",
+        "rule": "reponse_etayee",
+        "kb_gap": false
+      },
+      "ticket": {
+        "ticket_id": "TCK-0002",
+        "received_at": "2026-04-10T14:30:00",
+        "email": "stm1@example.com",
+        "pricelist_number": "11577",
+        "pricing_group": "MIA-ATLANTIC COAST TO EUROPE-ALL",
+        "time_of_issue": "2026-04-10 14:05",
+        "description": "The customer sees a BAF09 surcharge of 150 per 40' on SpotOn for MXVER to ESSCT (dry container), but I expected BAF09 to be included in the freight. Why is the price different?",
+        "pol": "MXVER",
+        "pod": "ESSCT",
+        "container_type": "ST",
+        "line_reference": "2378-134",
+        "quote_id": "QSPOT-A1",
+        "booking_id": "BKG-001"
+      },
+      "fixtures": {
+        "classify": {
+          "theme": "Charges Management",
+          "in_scope": true,
+          "team": "Pricing",
+          "needs": [
+            "docs",
+            "data"
+          ],
+          "price_case": true
+        },
+        "doc_search": {
+          "reliable": true,
+          "docs": [
+            {
+              "source": "Charges included in AQUA Spot.pdf",
+              "score": 0.74,
+              "extrait": "To change a charge structure to additional, a manual mass update is required."
+            }
+          ]
+        },
+        "data_investigation": {
+          "nb_candidates": 1,
+          "evidence": true,
+          "finding": "La ligne 2378-134 (detail_uid 360146852, valide du 2026-04-01 au 2026-05-15) existe en deux versions : système (CTB, INCLUDED, sans montant, fixed = N) et manuelle (Manual, ADDITIONAL, 75 par 20ST et 150 par 40ST, fixed = Y).",
+          "lines": [
+            {
+              "detail_uid": 360146852,
+              "line_sequence": "2378-134",
+              "charge_origin": "CTB",
+              "rate_structure": "INCLUDED",
+              "rate_20ST": null,
+              "rate_40ST": null,
+              "fixed": "N",
+              "valid_from": "2026-04-01",
+              "valid_to": "2026-05-15"
+            },
+            {
+              "detail_uid": 360146852,
+              "line_sequence": "2378-134",
+              "charge_origin": "Manual",
+              "rate_structure": "ADDITIONAL",
+              "rate_20ST": 75.0,
+              "rate_40ST": 150.0,
+              "fixed": "Y",
+              "valid_from": "2026-04-01",
+              "valid_to": "2026-05-15"
+            }
+          ]
+        }
+      }
+    },
+    {
+      "id": "S3_cas_incertain",
+      "enonce": "Situation 3 : cas incertain correctement transmis à un expert",
+      "expected": {
+        "decision": "escalader",
+        "rule": "pas_de_preuve",
+        "kb_gap": false
+      },
+      "ticket": {
+        "ticket_id": "TCK-0003",
+        "received_at": "2026-03-18T11:02:00",
+        "email": "stm2@example.com",
+        "pricelist_number": "11760",
+        "pricing_group": "ex SGP merge with MRS ASIA TO NAF",
+        "time_of_issue": "2026-03-18 10:40",
+        "description": "The customer quote on SpotOn for BDCGP to MAAGA (dry container) shows a total price higher than the one I set in AQUA. BAF09 looks correct. Why is the price different?",
+        "pol": "BDCGP",
+        "pod": "MAAGA",
+        "container_type": "ST",
+        "line_reference": "22195-4",
+        "quote_id": "QSPOT-B2",
+        "booking_id": "BKG-004"
+      },
+      "fixtures": {
+        "classify": {
+          "theme": "Pricing",
+          "in_scope": true,
+          "team": "Pricing",
+          "needs": [
+            "docs",
+            "data"
+          ],
+          "price_case": true
+        },
+        "doc_search": {
+          "reliable": false,
+          "docs": [
+            {
+              "source": "Charges included in AQUA Spot.pdf",
+              "score": 0.41,
+              "extrait": "Charges included by default in all AQUA Spot pricelist."
+            }
+          ]
+        },
+        "data_investigation": {
+          "nb_candidates": 1,
+          "evidence": false,
+          "finding": "La ligne 22195-4 (detail_uid 359468845, valide du 2026-03-16 au 2026-03-21) n'a qu'une version : CTB, ADDITIONAL, 150 par 20ST et 300 par 40ST. Aucune modification manuelle. Rien dans ces données n'explique l'écart sur le prix total.",
+          "lines": [
+            {
+              "detail_uid": 359468845,
+              "line_sequence": "22195-4",
+              "charge_origin": "CTB",
+              "rate_structure": "ADDITIONAL",
+              "rate_20ST": 150.0,
+              "rate_40ST": 300.0,
+              "fixed": "N",
+              "valid_from": "2026-03-16",
+              "valid_to": "2026-03-21"
+            }
+          ]
+        }
+      }
+    },
+    {
+      "id": "S4_lacune_documentaire",
+      "enonce": "Situation 4 : lacune documentaire détectée",
+      "expected": {
+        "decision": "escalader",
+        "rule": "pas_de_source_fiable",
+        "kb_gap": true
+      },
+      "ticket": {
+        "ticket_id": "TCK-0004",
+        "received_at": "2026-03-20T16:45:00",
+        "email": "stm3@example.com",
+        "pricelist_number": "11760",
+        "pricing_group": "ex SGP merge with MRS ASIA TO NAF",
+        "time_of_issue": "2026-03-20 16:30",
+        "description": "Is there a documented rule requiring SpotOn offers to be automatically suspended every Sunday between 02:00 and 04:00 UTC?",
+        "pol": "BDCGP",
+        "pod": "MAAGA",
+        "container_type": "",
+        "line_reference": "22195-4",
+        "quote_id": "",
+        "booking_id": ""
+      },
+      "fixtures": {
+        "classify": {
+          "theme": "Pricing",
+          "in_scope": true,
+          "team": "Web Support",
+          "needs": ["docs"],
+          "price_case": false
+        },
+        "doc_search": {
+          "reliable": false,
+          "docs": []
+        }
+      }
+    },
+    {
+      "id": "S5_plusieurs_lignes_candidates",
+      "enonce": "Branche complémentaire : demande de précision quand plusieurs lignes correspondent",
+      "expected": {
+        "decision": "preciser",
+        "rule": "plusieurs_lignes_candidates",
+        "kb_gap": false
+      },
+      "ticket": {
+        "ticket_id": "TCK-0005",
+        "received_at": "2026-03-20T10:15:00",
+        "email": "stm4@example.com",
+        "pricelist_number": "12359",
+        "pricing_group": "MEG/ISC/SEA/NEA TO AUS",
+        "time_of_issue": "2026-03-20 10:00",
+        "description": "For AEJEA to AUADL, the BAF09 shown to the customer on SpotOn is not what I expected. Can you check?",
+        "pol": "AEJEA",
+        "pod": "AUADL",
+        "container_type": "",
+        "line_reference": "",
+        "quote_id": "QSPOT-C1",
+        "booking_id": "BKG-005"
+      },
+      "fixtures": {
+        "classify": {
+          "theme": "Charges Management",
+          "in_scope": true,
+          "team": "Pricing",
+          "needs": [
+            "docs",
+            "data"
+          ],
+          "price_case": true
+        },
+        "doc_search": {
+          "reliable": true,
+          "docs": [
+            {
+              "source": "Charges included in AQUA Spot.pdf",
+              "score": 0.71,
+              "extrait": "How to check pricelist structure."
+            }
+          ]
+        },
+        "data_investigation": {
+          "nb_candidates": 2,
+          "evidence": false,
+          "finding": "Deux lignes valides du 2026-03-16 au 2026-03-31 sur cette route : 24804-2 (dry, CTB, ADDITIONAL) et 24333-4 (reefer, CTM, INCLUDED). Le ticket ne précise ni le type de conteneur ni la référence de ligne.",
+          "lines": [
+            {
+              "detail_uid": 363279621,
+              "line_sequence": "24804-2",
+              "charge_origin": "CTB",
+              "rate_structure": "ADDITIONAL",
+              "pricelist_line_type": "ST",
+              "valid_from": "2026-03-16",
+              "valid_to": "2026-03-31"
+            },
+            {
+              "detail_uid": 358495249,
+              "line_sequence": "24333-4",
+              "charge_origin": "CTM",
+              "rate_structure": "INCLUDED",
+              "pricelist_line_type": "RF",
+              "valid_from": "2026-03-16",
+              "valid_to": "2026-03-31"
+            }
+          ]
+        }
+      }
+    },
+    {
+      "id": "S6_hors_perimetre",
+      "enonce": "Branche complémentaire : demande hors périmètre renvoyée vers la bonne équipe",
+      "expected": {
+        "decision": "escalader",
+        "rule": "hors_perimetre",
+        "kb_gap": false
+      },
+      "ticket": {
+        "ticket_id": "TCK-0006",
+        "received_at": "2026-03-19T08:50:00",
+        "email": "sales1@example.com",
+        "pricelist_number": "11577",
+        "pricing_group": "MIA-ATLANTIC COAST TO EUROPE-ALL",
+        "time_of_issue": "2026-03-19 08:30",
+        "description": "Why is invoice DEEC0093126 based on 800 EUR/40HC when the AQUA offer showed 600 EUR/40HC?",
+        "pol": "MXVER",
+        "pod": "ESSCT",
+        "container_type": "",
+        "line_reference": "",
+        "quote_id": "",
+        "booking_id": ""
+      },
+      "fixtures": {
+        "classify": {
+          "theme": "Pricing",
+          "in_scope": false,
+          "team": "AQUA Contract",
+          "needs": [
+            "docs",
+            "data"
+          ],
+          "price_case": true
+        }
+      }
+    },
+    {
+      "id": "S7_champs_manquants",
+      "enonce": "Branche complémentaire : demande de précision quand la route n'est pas indiquée",
+      "expected": {
+        "decision": "preciser",
+        "rule": "champs_manquants",
+        "kb_gap": false
+      },
+      "ticket": {
+        "ticket_id": "TCK-0007",
+        "received_at": "2026-03-19T15:20:00",
+        "email": "stm5@example.com",
+        "pricelist_number": "",
+        "pricing_group": "",
+        "time_of_issue": "2026-03-19 15:00",
+        "description": "The price on SpotOn is different from what I expected.",
+        "pol": "",
+        "pod": "",
+        "container_type": "",
+        "line_reference": "",
+        "quote_id": "",
+        "booking_id": ""
+      },
+      "fixtures": {
+        "classify": {
+          "theme": "Pricing",
+          "in_scope": true,
+          "team": "Pricing",
+          "needs": [
+            "docs",
+            "data"
+          ],
+          "price_case": true
+        }
+      }
+    }
+  ]
+}
